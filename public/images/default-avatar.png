@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Background -->
+  <rect width="200" height="200" fill="#1e293b"/>
+  
+  <!-- Circle for head -->
+  <circle cx="100" cy="70" r="40" fill="#3b82f6"/>
+  
+  <!-- Circle for body -->
+  <circle cx="100" cy="150" r="50" fill="#3b82f6"/>
+  
+  <!-- Text -->
+  <text x="100" y="160" text-anchor="middle" font-size="60" fill="#ffffff" font-family="Arial">?</text>
+</svg>
