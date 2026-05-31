@@ -17,7 +17,6 @@
                     <thead>
                         <tr>
                             <th>Title</th>
-                            <th>Category</th>
                             <th>Status</th>
                             <th>Deleted</th>
                             <th class="text-end">Actions</th>
@@ -27,15 +26,6 @@
                         @forelse ($tasks as $task)
                             <tr>
                                 <td><strong>{{ $task->title }}</strong></td>
-                                <td>
-                                    @if ($task->category)
-                                        <span class="category-chip" style="background-color: {{ $task->category->color }}1a; color: {{ $task->category->color }};">
-                                            <span class="dot"></span>{{ $task->category->name }}
-                                        </span>
-                                    @else
-                                        <span class="text-muted">—</span>
-                                    @endif
-                                </td>
                                 <td>
                                     <span class="badge badge-{{ $task->getStatusColor() }}">
                                         {{ str_replace('_', ' ', ucfirst($task->status)) }}
@@ -53,7 +43,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center py-5">
+                                <td colspan="4" class="text-center py-5">
                                     <i class="fas fa-trash-can" style="font-size: 2rem; color: #cbd5e1;"></i>
                                     <p class="text-muted mt-3">Trash is empty.</p>
                                 </td>

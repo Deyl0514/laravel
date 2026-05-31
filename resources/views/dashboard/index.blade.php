@@ -4,7 +4,6 @@
 @section('page-title', 'Dashboard')
 
 @section('content')
-    <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-md-6 col-lg-3 mb-3">
             <div class="stat-card tasks">
@@ -39,7 +38,6 @@
         </div>
     </div>
 
-    <!-- Completion Progress -->
     <div class="card mb-4">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -55,9 +53,7 @@
         </div>
     </div>
 
-    <!-- Charts Row -->
     <div class="row mb-4">
-        <!-- Tasks by Status Chart -->
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
@@ -73,7 +69,6 @@
             </div>
         </div>
 
-        <!-- Tasks by Priority Chart -->
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
@@ -90,7 +85,6 @@
         </div>
     </div>
 
-    <!-- Recent Tasks -->
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -106,7 +100,6 @@
                                 <thead>
                                     <tr>
                                         <th>Title</th>
-                                        <th>Category</th>
                                         <th>Priority</th>
                                         <th>Status</th>
                                         <th>Due Date</th>
@@ -120,15 +113,6 @@
                                                 <strong>{{ $task->title }}</strong>
                                                 @if ($task->isOverdue())
                                                     <span class="badge badge-danger ms-2">Overdue</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if ($task->category)
-                                                    <span class="category-chip" style="background-color: {{ $task->category->color }}1a; color: {{ $task->category->color }};">
-                                                        <span class="dot"></span>{{ $task->category->name }}
-                                                    </span>
-                                                @else
-                                                    <span class="text-muted">—</span>
                                                 @endif
                                             </td>
                                             <td>
@@ -176,7 +160,6 @@
 
 @section('extra-js')
     <script>
-        // Tasks by Status Chart
         const statusCtx = document.getElementById('statusChart').getContext('2d');
         const statusChart = new Chart(statusCtx, {
             type: 'bar',
@@ -222,7 +205,6 @@
             }
         });
 
-        // Tasks by Priority Chart
         const priorityCtx = document.getElementById('priorityChart').getContext('2d');
         const priorityChart = new Chart(priorityCtx, {
             type: 'doughnut',
@@ -261,7 +243,7 @@
                             }
                         }
                     }
-                }   
+                }
             }
         });
     </script>

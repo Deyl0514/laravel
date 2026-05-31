@@ -4,25 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title') - Task Manager</title>
-    
-    <!-- Google Font -->
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Bootstrap 5 CSS -->
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Font Awesome -->
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    
-    <!-- Toastr CSS -->
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
 
-    <!-- SweetAlert2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-    
-    <!-- Chart.js -->
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    
+
     <style>
         :root {
             --sidebar-bg: #1e293b;
@@ -44,7 +38,6 @@
             padding: 0;
         }
 
-        /* Sidebar Styling */
         .sidebar {
             background-color: var(--sidebar-bg);
             min-height: 100vh;
@@ -120,7 +113,6 @@
             border: 2px solid var(--primary-accent);
         }
 
-        /* Main Content Styling */
         .main-wrapper {
             margin-left: 250px;
             min-height: 100vh;
@@ -146,7 +138,6 @@
             padding: 30px;
         }
 
-        /* Card Styling */
         .card {
             border: none;
             border-radius: 12px;
@@ -170,7 +161,6 @@
             padding: 20px;
         }
 
-        /* Stat Cards */
         .stat-card {
             background: white;
             border-radius: 12px;
@@ -229,7 +219,6 @@
             color: var(--warning-accent);
         }
 
-        /* Table Styling */
         .table {
             background: white;
         }
@@ -255,7 +244,6 @@
             background-color: #f8fafc;
         }
 
-        /* Badge Styling */
         .badge {
             padding: 6px 12px;
             border-radius: 20px;
@@ -283,7 +271,6 @@
             color: #164e63;
         }
 
-        /* Button Styling */
         .btn {
             border-radius: 8px;
             padding: 8px 16px;
@@ -338,7 +325,6 @@
             font-size: 0.8rem;
         }
 
-        /* Form Styling */
         .form-control,
         .form-select {
             border-radius: 8px;
@@ -360,7 +346,6 @@
             font-size: 0.9rem;
         }
 
-        /* Modal Styling */
         .modal-content {
             border: none;
             border-radius: 12px;
@@ -377,7 +362,6 @@
             filter: brightness(0.6);
         }
 
-        /* Responsive Design */
         @media (max-width: 768px) {
             .sidebar {
                 position: relative;
@@ -399,7 +383,6 @@
             }
         }
 
-        /* Error and Success Messages */
         .alert {
             border-radius: 8px;
             border: none;
@@ -415,13 +398,11 @@
             color: #065f46;
         }
 
-        /* Overdue task styling */
         .task-overdue {
             border-left: 4px solid var(--danger-accent);
             background-color: #fef2f2;
         }
 
-        /* Pagination */
         .pagination {
             gap: 5px;
         }
@@ -443,19 +424,16 @@
             border-color: var(--primary-accent);
         }
 
-        /* Toastr customization */
         .toast {
             border-radius: 8px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
         }
 
-        /* Chart container */
         .chart-container {
             position: relative;
             height: 300px;
         }
 
-        /* Profile picture preview */
         .profile-picture-preview {
             width: 100px;
             height: 100px;
@@ -465,7 +443,6 @@
             margin-bottom: 15px;
         }
 
-        /* Dropdown menu in sidebar */
         .dropdown-menu {
             background-color: rgba(59, 130, 246, 0.95);
             border: none;
@@ -484,7 +461,6 @@
             color: var(--text-light);
         }
 
-        /* Search and filter styling */
         .search-box {
             display: flex;
             gap: 10px;
@@ -502,26 +478,6 @@
             margin-bottom: 10px;
         }
 
-        /* Category chip */
-        .category-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 3px 10px;
-            border-radius: 999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            background-color: #eef2ff;
-            color: #3730a3;
-        }
-        .category-chip .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: currentColor;
-        }
-
-        /* Kanban */
         .kanban-board {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -594,7 +550,6 @@
             transform: rotate(2deg);
         }
 
-        /* Progress bar */
         .progress-thin {
             height: 8px;
             border-radius: 999px;
@@ -612,7 +567,6 @@
 </head>
 <body>
     <div class="d-flex">
-        <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
                 <i class="fas fa-tasks" style="font-size: 1.5rem; color: var(--primary-accent);"></i>
@@ -631,10 +585,6 @@
                 <a href="{{ route('tasks.board') }}" class="nav-link {{ request()->routeIs('tasks.board') ? 'active' : '' }}">
                     <i class="fas fa-columns"></i>
                     <span>Board</span>
-                </a>
-                <a href="{{ route('categories.index') }}" class="nav-link {{ request()->routeIs('categories.*') ? 'active' : '' }}">
-                    <i class="fas fa-tags"></i>
-                    <span>Categories</span>
                 </a>
                 <a href="{{ route('tasks.trashed') }}" class="nav-link {{ request()->routeIs('tasks.trashed') ? 'active' : '' }}">
                     <i class="fas fa-trash-can"></i>
@@ -666,9 +616,7 @@
             </nav>
         </div>
 
-        <!-- Main Content -->
         <div class="main-wrapper w-100">
-            <!-- Top Navbar -->
             <nav class="navbar navbar-light">
                 <div class="container-fluid d-flex justify-content-between align-items-center">
                     <span class="navbar-brand mb-0">@yield('page-title')</span>
@@ -681,29 +629,22 @@
                 </div>
             </nav>
 
-            <!-- Content Area -->
             <div class="content">
                 @yield('content')
             </div>
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <!-- Toastr JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- SortableJS (drag-and-drop for Kanban) -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 
-    <!-- CSRF + global jQuery setup -->
     <script>
         $.ajaxSetup({
             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
@@ -723,7 +664,6 @@
         }
     </script>
 
-    <!-- Toastr Configuration -->
     <script>
         toastr.options = {
             "closeButton": true,

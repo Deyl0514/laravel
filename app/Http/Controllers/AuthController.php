@@ -6,22 +6,15 @@ use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
 class AuthController extends Controller
 {
-    /**
-     * Show the registration view.
-     */
     public function showRegister(): View
     {
         return view('auth.register');
     }
 
-    /**
-     * Handle user registration.
-     */
     public function register(Request $request)
     {
         $validated = $request->validate([
@@ -41,17 +34,11 @@ class AuthController extends Controller
         return redirect()->route('login')->with('success', 'Registration successful! Please login.');
     }
 
-    /**
-     * Show the login view.
-     */
     public function showLogin(): View
     {
         return view('auth.login');
     }
 
-    /**
-     * Handle user login.
-     */
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -68,9 +55,6 @@ class AuthController extends Controller
         ])->onlyInput('email');
     }
 
-    /**
-     * Handle user logout.
-     */
     public function logout(Request $request)
     {
         auth()->logout();

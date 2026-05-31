@@ -9,9 +9,6 @@ use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    /**
-     * Display the dashboard.
-     */
     public function index(): View
     {
         $user = auth()->user();
@@ -44,7 +41,6 @@ class DashboardController extends Controller
         ];
 
         $recentTasks = Task::where('user_id', $user->id)
-            ->with('category')
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();

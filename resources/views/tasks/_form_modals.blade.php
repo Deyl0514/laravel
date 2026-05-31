@@ -1,6 +1,3 @@
-{{-- Reusable Add/Edit Task modals. Requires $categories. --}}
-
-<!-- Add Task Modal -->
 <div class="modal fade" id="addTaskModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -24,7 +21,7 @@
                         <small class="text-danger" id="addDescriptionError"></small>
                     </div>
                     <div class="row">
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6 mb-3">
                             <label class="form-label">Priority</label>
                             <select class="form-select" id="addPriority" required>
                                 <option value="low">Low</option>
@@ -33,7 +30,7 @@
                             </select>
                             <small class="text-danger" id="addPriorityError"></small>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6 mb-3">
                             <label class="form-label">Status</label>
                             <select class="form-select" id="addStatus" required>
                                 <option value="pending" selected>Pending</option>
@@ -41,16 +38,6 @@
                                 <option value="completed">Completed</option>
                             </select>
                             <small class="text-danger" id="addStatusError"></small>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Category</label>
-                            <select class="form-select" id="addCategory">
-                                <option value="">— None —</option>
-                                @foreach ($categories as $cat)
-                                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                                @endforeach
-                            </select>
-                            <small class="text-danger" id="addCategoryError"></small>
                         </div>
                     </div>
                     <div class="mb-3">
@@ -70,7 +57,6 @@
     </div>
 </div>
 
-<!-- Edit Task Modal -->
 <div class="modal fade" id="editTaskModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -96,7 +82,7 @@
                         <small class="text-danger" id="editDescriptionError"></small>
                     </div>
                     <div class="row">
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6 mb-3">
                             <label class="form-label">Priority</label>
                             <select class="form-select" id="editPriority" required>
                                 <option value="low">Low</option>
@@ -105,7 +91,7 @@
                             </select>
                             <small class="text-danger" id="editPriorityError"></small>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6 mb-3">
                             <label class="form-label">Status</label>
                             <select class="form-select" id="editStatus" required>
                                 <option value="pending">Pending</option>
@@ -113,16 +99,6 @@
                                 <option value="completed">Completed</option>
                             </select>
                             <small class="text-danger" id="editStatusError"></small>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Category</label>
-                            <select class="form-select" id="editCategory">
-                                <option value="">— None —</option>
-                                @foreach ($categories as $cat)
-                                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                                @endforeach
-                            </select>
-                            <small class="text-danger" id="editCategoryError"></small>
                         </div>
                     </div>
                     <div class="mb-3">

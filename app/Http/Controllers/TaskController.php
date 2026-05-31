@@ -8,12 +8,9 @@ use Illuminate\View\View;
 
 class TaskController extends Controller
 {
-    /**
-     * Display all tasks for the logged-in user.
-     */
     public function index(Request $request): View
     {
-        $query = auth()->user()->tasks()->with('category');
+        $query = auth()->user()->tasks();
 
         if ($status = $request->input('status')) {
             $query->where('status', $status);
@@ -21,10 +18,6 @@ class TaskController extends Controller
 
         if ($priority = $request->input('priority')) {
             $query->where('priority', $priority);
-        }
-
-        if ($categoryId = $request->input('category_id')) {
-            $query->where('category_id', $categoryId);
         }
 
         if ($search = $request->input('search')) {
@@ -35,18 +28,13 @@ class TaskController extends Controller
         }
 
         $tasks = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
-        $categories = auth()->user()->categories()->orderBy('name')->get();
 
-        return view('tasks.index', compact('tasks', 'categories'));
+        return view('tasks.index', compact('tasks'));
     }
 
-    /**
-     * Display tasks in a Kanban board view.
-     */
     public function board(): View
     {
-        $tasks = auth()->user()->tasks()->with('category')->orderBy('updated_at', 'desc')->get();
-        $categories = auth()->user()->categories()->orderBy('name')->get();
+        $tasks = auth()->user()->tasks()->orderBy('updated_at', 'desc')->get();
 
         $columns = [
             'pending' => $tasks->where('status', 'pending')->values(),
@@ -54,12 +42,9 @@ class TaskController extends Controller
             'completed' => $tasks->where('status', 'completed')->values(),
         ];
 
-        return view('tasks.board', compact('columns', 'categories'));
+        return view('tasks.board', compact('columns'));
     }
 
-    /**
-     * Store a new task.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -68,17 +53,13 @@ class TaskController extends Controller
             'priority' => 'required|in:low,medium,high',
             'status' => 'required|in:pending,in_progress,completed',
             'due_date' => 'nullable|date|after_or_equal:today',
-            'category_id' => 'nullable|exists:categories,id',
         ]);
-
-        $this->assertOwnedCategory($validated['category_id'] ?? null);
 
         if ($validated['status'] === 'completed') {
             $validated['completed_at'] = now();
         }
 
         $task = auth()->user()->tasks()->create($validated);
-        $task->load('category');
 
         return response()->json([
             'success' => true,
@@ -87,9 +68,6 @@ class TaskController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified task.
-     */
     public function update(Request $request, Task $task)
     {
         $this->authorizeTask($task);
@@ -100,10 +78,7 @@ class TaskController extends Controller
             'priority' => 'required|in:low,medium,high',
             'status' => 'required|in:pending,in_progress,completed',
             'due_date' => 'nullable|date',
-            'category_id' => 'nullable|exists:categories,id',
         ]);
-
-        $this->assertOwnedCategory($validated['category_id'] ?? null);
 
         if ($validated['status'] === 'completed' && $task->status !== 'completed') {
             $validated['completed_at'] = now();
@@ -112,7 +87,6 @@ class TaskController extends Controller
         }
 
         $task->update($validated);
-        $task->load('category');
 
         return response()->json([
             'success' => true,
@@ -121,9 +95,6 @@ class TaskController extends Controller
         ]);
     }
 
-    /**
-     * Quickly update only the status (used by Kanban + inline toggle).
-     */
     public function updateStatus(Request $request, Task $task)
     {
         $this->authorizeTask($task);
@@ -148,9 +119,6 @@ class TaskController extends Controller
         ]);
     }
 
-    /**
-     * Soft-delete the task (sent to trash).
-     */
     public function destroy(Task $task)
     {
         $this->authorizeTask($task);
@@ -163,20 +131,14 @@ class TaskController extends Controller
         ]);
     }
 
-    /**
-     * List soft-deleted tasks.
-     */
     public function trashed(): View
     {
-        $tasks = auth()->user()->tasks()->with('category')->onlyTrashed()
+        $tasks = auth()->user()->tasks()->onlyTrashed()
             ->orderBy('deleted_at', 'desc')->paginate(10);
 
         return view('tasks.trashed', compact('tasks'));
     }
 
-    /**
-     * Restore a soft-deleted task.
-     */
     public function restore(int $id)
     {
         $task = auth()->user()->tasks()->onlyTrashed()->findOrFail($id);
@@ -188,9 +150,6 @@ class TaskController extends Controller
         ]);
     }
 
-    /**
-     * Permanently delete a task.
-     */
     public function forceDelete(int $id)
     {
         $task = auth()->user()->tasks()->onlyTrashed()->findOrFail($id);
@@ -209,20 +168,6 @@ class TaskController extends Controller
                 'success' => false,
                 'message' => 'Unauthorized',
             ], 403));
-        }
-    }
-
-    private function assertOwnedCategory(?int $categoryId): void
-    {
-        if ($categoryId === null) {
-            return;
-        }
-        $owned = auth()->user()->categories()->whereKey($categoryId)->exists();
-        if (! $owned) {
-            abort(response()->json([
-                'success' => false,
-                'message' => 'Invalid category.',
-            ], 422));
         }
     }
 }

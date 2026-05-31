@@ -56,11 +56,6 @@
                                 </div>
                             @endif
                             <div class="meta">
-                                @if ($task->category)
-                                    <span class="category-chip" style="background-color: {{ $task->category->color }}1a; color: {{ $task->category->color }};">
-                                        <span class="dot"></span>{{ $task->category->name }}
-                                    </span>
-                                @endif
                                 <span class="badge badge-{{ $task->getPriorityColor() }}">{{ ucfirst($task->priority) }}</span>
                                 @if ($task->due_date)
                                     <span><i class="fas fa-calendar-alt"></i> {{ $task->due_date->format('M d') }}</span>
@@ -73,7 +68,7 @@
         @endforeach
     </div>
 
-    @include('tasks._form_modals', ['categories' => $categories])
+    @include('tasks._form_modals')
 @endsection
 
 @section('extra-js')
@@ -121,15 +116,14 @@
             });
         }
 
-        // Reused stubs from list page for the Add modal
         function clearErrors(prefix) {
-            ['Title','Description','Priority','Status','DueDate','Category'].forEach(k => {
+            ['Title','Description','Priority','Status','DueDate'].forEach(k => {
                 const el = document.getElementById(prefix + k + 'Error');
                 if (el) el.textContent = '';
             });
         }
         function applyErrors(prefix, errors) {
-            const map = { title:'Title', description:'Description', priority:'Priority', status:'Status', due_date:'DueDate', category_id:'Category' };
+            const map = { title:'Title', description:'Description', priority:'Priority', status:'Status', due_date:'DueDate' };
             Object.keys(errors).forEach(k => {
                 const el = document.getElementById(prefix + (map[k] || '') + 'Error');
                 if (el) el.textContent = errors[k][0];
@@ -146,7 +140,6 @@
                     priority: $('#addPriority').val(),
                     status: $('#addStatus').val(),
                     due_date: $('#addDueDate').val(),
-                    category_id: $('#addCategory').val() || null,
                 },
                 success(res) {
                     toastr.success(res.message);
@@ -160,7 +153,6 @@
                 }
             });
         }
-        // Edit submit unused on board, but defined so the modal partial works if invoked
         function submitEditTask() {}
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('addDueDate').setAttribute('min', today);

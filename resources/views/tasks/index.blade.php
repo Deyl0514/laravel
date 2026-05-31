@@ -21,14 +21,6 @@
                     <option value="medium" @selected(request('priority') === 'medium')>Medium</option>
                     <option value="high" @selected(request('priority') === 'high')>High</option>
                 </select>
-                <select class="form-select" id="categoryFilter" style="max-width: 170px;">
-                    <option value="">All Categories</option>
-                    @foreach ($categories as $cat)
-                        <option value="{{ $cat->id }}" @selected((string) request('category_id') === (string) $cat->id)>
-                            {{ $cat->name }}
-                        </option>
-                    @endforeach
-                </select>
             </div>
         </div>
         <div class="col-md-4 text-end">
@@ -59,7 +51,6 @@
                     <thead>
                         <tr>
                             <th>Title</th>
-                            <th>Category</th>
                             <th>Priority</th>
                             <th>Status</th>
                             <th>Due Date</th>
@@ -77,15 +68,6 @@
                                     @endif
                                     @if ($task->description)
                                         <br><small class="text-muted">{{ Str::limit($task->description, 50) }}</small>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($task->category)
-                                        <span class="category-chip" style="background-color: {{ $task->category->color }}1a; color: {{ $task->category->color }};">
-                                            <span class="dot"></span>{{ $task->category->name }}
-                                        </span>
-                                    @else
-                                        <span class="text-muted">—</span>
                                     @endif
                                 </td>
                                 <td>
@@ -138,7 +120,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-5">
+                                <td colspan="6" class="text-center py-5">
                                     <i class="fas fa-inbox" style="font-size: 2rem; color: #cbd5e1;"></i>
                                     <p class="text-muted mt-3">No tasks found</p>
                                     <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addTaskModal">
@@ -159,7 +141,7 @@
         </div>
     </div>
 
-    @include('tasks._form_modals', ['categories' => $categories])
+    @include('tasks._form_modals')
 @endsection
 
 @section('extra-js')
@@ -176,14 +158,12 @@
                 document.getElementById('editPriority').value = t.priority || 'medium';
                 document.getElementById('editStatus').value = t.status || 'pending';
                 document.getElementById('editDueDate').value = t.due_date ? t.due_date.substring(0, 10) : '';
-                document.getElementById('editCategory').value = t.category_id || '';
-                // clear errors
                 document.querySelectorAll('#editTaskForm small.text-danger').forEach(s => s.textContent = '');
             });
         });
 
         function clearErrors(prefix) {
-            ['Title','Description','Priority','Status','DueDate','Category'].forEach(k => {
+            ['Title','Description','Priority','Status','DueDate'].forEach(k => {
                 const el = document.getElementById(prefix + k + 'Error');
                 if (el) el.textContent = '';
             });
@@ -192,7 +172,7 @@
         function applyErrors(prefix, errors) {
             const map = {
                 title: 'Title', description: 'Description', priority: 'Priority',
-                status: 'Status', due_date: 'DueDate', category_id: 'Category'
+                status: 'Status', due_date: 'DueDate'
             };
             Object.keys(errors).forEach(k => {
                 const id = prefix + (map[k] || '') + 'Error';
@@ -212,7 +192,6 @@
                     priority: $('#addPriority').val(),
                     status: $('#addStatus').val(),
                     due_date: $('#addDueDate').val(),
-                    category_id: $('#addCategory').val() || null,
                 },
                 success(res) {
                     toastr.success(res.message);
@@ -239,7 +218,6 @@
                     priority: $('#editPriority').val(),
                     status: $('#editStatus').val(),
                     due_date: $('#editDueDate').val(),
-                    category_id: $('#editCategory').val() || null,
                 },
                 success(res) {
                     toastr.success(res.message);
@@ -286,11 +264,9 @@
             const search = $('#searchInput').val();
             const status = $('#statusFilter').val();
             const priority = $('#priorityFilter').val();
-            const category = $('#categoryFilter').val();
             if (search) params.set('search', search);
             if (status) params.set('status', status);
             if (priority) params.set('priority', priority);
-            if (category) params.set('category_id', category);
             const qs = params.toString();
             return tasksIndexUrl + (qs ? '?' + qs : '');
         }
@@ -300,7 +276,7 @@
             clearTimeout(searchTimer);
             searchTimer = setTimeout(() => window.location.href = buildFilterUrl(), 400);
         });
-        $('#statusFilter, #priorityFilter, #categoryFilter').on('change', function () {
+        $('#statusFilter, #priorityFilter').on('change', function () {
             window.location.href = buildFilterUrl();
         });
 

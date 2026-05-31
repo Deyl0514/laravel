@@ -6,7 +6,6 @@
 @section('content')
     <div class="row">
         <div class="col-md-4 mb-4">
-            <!-- Profile Card -->
             <div class="card text-center">
                 <div class="card-body">
                     <img src="{{ $user->getProfilePictureUrl() }}?v={{ $user->updated_at->timestamp }}"
@@ -36,7 +35,6 @@
         </div>
 
         <div class="col-md-8">
-            <!-- Edit Profile Form -->
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">
@@ -51,13 +49,13 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">Full Name</label>
-                                <input type="text" class="form-control" id="name" name="name" 
+                                <input type="text" class="form-control" id="name" name="name"
                                        value="{{ $user->name }}" required>
                                 <small class="text-danger" id="nameError"></small>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Email Address</label>
-                                <input type="email" class="form-control" id="email" name="email" 
+                                <input type="email" class="form-control" id="email" name="email"
                                        value="{{ $user->email }}" required>
                                 <small class="text-danger" id="emailError"></small>
                             </div>
@@ -76,7 +74,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Profile Picture</label>
-                                <input type="file" class="form-control" id="profile_picture" name="profile_picture" 
+                                <input type="file" class="form-control" id="profile_picture" name="profile_picture"
                                        accept="image/jpeg,image/png,image/jpg,image/gif">
                                 <small class="text-muted">Max 2MB. Formats: JPG, PNG, GIF</small>
                                 <small class="text-danger" id="profilePictureError"></small>
@@ -85,13 +83,13 @@
 
                         <div class="mb-3">
                             <label class="form-label">Address</label>
-                            <textarea class="form-control" id="address" name="address" rows="3" 
+                            <textarea class="form-control" id="address" name="address" rows="3"
                                       placeholder="Enter your address">{{ $user->address }}</textarea>
                             <small class="text-danger" id="addressError"></small>
                         </div>
 
                         <div class="alert alert-info" role="alert">
-                            <i class="fas fa-info-circle"></i> 
+                            <i class="fas fa-info-circle"></i>
                             Fill in the fields you want to update and click the Save button below.
                         </div>
 
@@ -129,7 +127,6 @@
             const form = document.getElementById('profileForm');
             const formData = new FormData(form);
 
-            // Force the spoofed method + token to be present regardless of hidden inputs
             formData.set('_method', 'PUT');
             formData.set('_token', csrfToken);
 
@@ -179,7 +176,6 @@
                     } else {
                         toastr.error(data.message || ('Save failed (HTTP ' + xhr.status + ')'));
                     }
-                    console.error('Profile save failed:', xhr.status, xhr.responseText);
                 },
                 complete() {
                     if (saveBtn && saveBtn.disabled) {

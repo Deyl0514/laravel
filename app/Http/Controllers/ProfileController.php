@@ -26,24 +26,20 @@ class ProfileController extends Controller
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+        $user->gender = $validated['gender'] ?? null;
+        $user->address = $validated['address'] ?? null;
+
         if ($request->hasFile('profile_picture')) {
             if ($user->profile_picture && Storage::disk('public')->exists($user->profile_picture)) {
                 Storage::disk('public')->delete($user->profile_picture);
             }
-            $validated['profile_picture'] = $request->file('profile_picture')
+            $user->profile_picture = $request->file('profile_picture')
                 ->store('profile-pictures', 'public');
-        } else {
-            unset($validated['profile_picture']);
         }
 
-        $user->forceFill([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'gender' => $validated['gender'] ?? null,
-            'address' => $validated['address'] ?? null,
-        ] + (isset($validated['profile_picture'])
-            ? ['profile_picture' => $validated['profile_picture']]
-            : []))->save();
+        $user->save();
 
         return response()->json([
             'success' => true,

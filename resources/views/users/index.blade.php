@@ -51,12 +51,12 @@
                                     </small>
                                 </td>
                                 <td>
-                                    <button class="btn btn-sm btn-primary" 
+                                    <button class="btn btn-sm btn-primary"
                                             onclick="editUser({{ $user->id }}, '{{ $user->name }}', '{{ $user->email }}')"
                                             data-bs-toggle="modal" data-bs-target="#editUserModal">
                                         <i class="fas fa-edit"></i> Edit
                                     </button>
-                                    <button class="btn btn-sm btn-danger" 
+                                    <button class="btn btn-sm btn-danger"
                                             onclick="deleteUser({{ $user->id }}, '{{ $user->name }}')">
                                         <i class="fas fa-trash"></i> Delete
                                     </button>
@@ -74,7 +74,6 @@
                 </table>
             </div>
 
-            <!-- Pagination -->
             @if ($users->hasPages())
                 <nav aria-label="Page navigation" class="mt-4">
                     {{ $users->links('pagination::bootstrap-5') }}
@@ -83,7 +82,6 @@
         </div>
     </div>
 
-    <!-- Add User Modal -->
     <div class="modal fade" id="addUserModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -123,7 +121,6 @@
         </div>
     </div>
 
-    <!-- Edit User Modal -->
     <div class="modal fade" id="editUserModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -270,7 +267,6 @@
             window.location.href = '{{ route("users.index") }}?search=' + encodeURIComponent(search);
         }
 
-        // Allow Enter key to trigger search
         document.getElementById('searchInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 filterUsers();

@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TaskController;
@@ -21,16 +20,12 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('users', UserController::class)->only(['index', 'store', 'update', 'destroy']);
 
-    // Tasks
     Route::get('/tasks/board', [TaskController::class, 'board'])->name('tasks.board');
     Route::get('/tasks/trashed', [TaskController::class, 'trashed'])->name('tasks.trashed');
     Route::patch('/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.status');
     Route::post('/tasks/{id}/restore', [TaskController::class, 'restore'])->name('tasks.restore');
     Route::delete('/tasks/{id}/force', [TaskController::class, 'forceDelete'])->name('tasks.forceDelete');
     Route::resource('tasks', TaskController::class)->only(['index', 'store', 'update', 'destroy']);
-
-    // Categories
-    Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
 
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');

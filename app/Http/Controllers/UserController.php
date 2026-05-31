@@ -9,9 +9,6 @@ use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    /**
-     * Display all users.
-     */
     public function index(Request $request): View
     {
         $query = User::query();
@@ -26,9 +23,6 @@ class UserController extends Controller
         return view('users.index', compact('users'));
     }
 
-    /**
-     * Store a new user.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -50,9 +44,6 @@ class UserController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified user.
-     */
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
@@ -76,9 +67,6 @@ class UserController extends Controller
         ]);
     }
 
-    /**
-     * Delete the specified user.
-     */
     public function destroy(User $user)
     {
         $user->delete();
