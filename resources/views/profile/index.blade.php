@@ -9,12 +9,26 @@
             <!-- Profile Card -->
             <div class="card text-center">
                 <div class="card-body">
-                    <img src="{{ $user->getProfilePictureUrl() }}" alt="Profile" class="profile-picture-preview">
+                    <img src="{{ $user->getProfilePictureUrl() }}?v={{ $user->updated_at->timestamp }}"
+                         alt="Profile" class="profile-picture-preview">
                     <h5 class="card-title">{{ $user->name }}</h5>
-                    <p class="text-muted">{{ $user->email }}</p>
+                    <p class="text-muted mb-1">{{ $user->email }}</p>
+                    @if ($user->gender)
+                        <p class="text-muted mb-1" style="font-size: 0.85rem;">
+                            <i class="fas fa-venus-mars"></i> {{ ucfirst($user->gender) }}
+                        </p>
+                    @endif
+                    @if ($user->address)
+                        <p class="text-muted mb-1" style="font-size: 0.85rem;">
+                            <i class="fas fa-location-dot"></i> {{ $user->address }}
+                        </p>
+                    @endif
                     <div class="mt-3 pt-3 border-top">
-                        <small class="text-muted">
+                        <small class="text-muted d-block">
                             <i class="fas fa-calendar-alt"></i> Member since {{ $user->created_at->format('M d, Y') }}
+                        </small>
+                        <small class="text-muted d-block mt-1">
+                            <i class="fas fa-clock"></i> Last updated {{ $user->updated_at->diffForHumans() }}
                         </small>
                     </div>
                 </div>
@@ -30,7 +44,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form id="profileForm">
+                    <form id="profileForm" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
@@ -95,87 +109,92 @@
         </div>
     </div>
 
-    <!-- Statistics Section -->
-    <div class="row mt-4">
-        <div class="col-md-4 mb-3">
-            <div class="stat-card tasks">
-                <div class="stat-icon">
-                    <i class="fas fa-list-check"></i>
-                </div>
-                <div class="stat-number">{{ auth()->user()->tasks()->count() }}</div>
-                <div class="stat-label">Total Tasks</div>
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-3">
-            <div class="stat-card completed">
-                <div class="stat-icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <div class="stat-number">{{ auth()->user()->tasks()->where('status', 'completed')->count() }}</div>
-                <div class="stat-label">Completed Tasks</div>
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-3">
-            <div class="stat-card pending">
-                <div class="stat-icon">
-                    <i class="fas fa-hourglass-half"></i>
-                </div>
-                <div class="stat-number">{{ auth()->user()->tasks()->where('status', '!=', 'completed')->count() }}</div>
-                <div class="stat-label">Active Tasks</div>
-            </div>
-        </div>
-    </div>
 @endsection
 
 @section('extra-js')
     <script>
+        const profileUpdateUrl = @json(route('profile.update'));
+        const csrfToken = @json(csrf_token());
+
+        function clearProfileErrors() {
+            ['name', 'email', 'gender', 'address', 'profilePicture'].forEach(k => {
+                const el = document.getElementById(k + 'Error');
+                if (el) el.textContent = '';
+            });
+        }
+
         function submitProfile() {
-            const formData = new FormData(document.getElementById('profileForm'));
+            clearProfileErrors();
+
+            const form = document.getElementById('profileForm');
+            const formData = new FormData(form);
+
+            // Force the spoofed method + token to be present regardless of hidden inputs
+            formData.set('_method', 'PUT');
+            formData.set('_token', csrfToken);
+
+            const saveBtn = document.querySelector('button[onclick="submitProfile()"]');
+            if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; }
 
             $.ajax({
-                url: '{{ route("profile.update") }}',
+                url: profileUpdateUrl,
                 method: 'POST',
                 data: formData,
                 processData: false,
                 contentType: false,
-                success: function(response) {
-                    toastr.success(response.message);
-                    setTimeout(() => location.reload(), 1500);
+                cache: false,
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                success(response) {
+                    toastr.success(response.message || 'Profile updated!');
+                    setTimeout(() => location.reload(), 800);
                 },
-                error: function(xhr) {
-                    if (xhr.responseJSON.errors) {
-                        // Clear previous errors
-                        document.querySelectorAll('.text-danger').forEach(el => el.textContent = '');
+                error(xhr) {
+                    if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes'; }
 
-                        // Display new errors
-                        if (xhr.responseJSON.errors.name) {
-                            document.getElementById('nameError').textContent = xhr.responseJSON.errors.name[0];
+                    const data = xhr.responseJSON || {};
+                    const errors = data.errors || {};
+                    const map = {
+                        name: 'nameError',
+                        email: 'emailError',
+                        gender: 'genderError',
+                        address: 'addressError',
+                        profile_picture: 'profilePictureError',
+                    };
+                    let hadFieldError = false;
+                    Object.keys(errors).forEach(field => {
+                        const id = map[field];
+                        if (id) {
+                            const el = document.getElementById(id);
+                            if (el) el.textContent = errors[field][0];
+                            hadFieldError = true;
                         }
-                        if (xhr.responseJSON.errors.email) {
-                            document.getElementById('emailError').textContent = xhr.responseJSON.errors.email[0];
-                        }
-                        if (xhr.responseJSON.errors.gender) {
-                            document.getElementById('genderError').textContent = xhr.responseJSON.errors.gender[0];
-                        }
-                        if (xhr.responseJSON.errors.address) {
-                            document.getElementById('addressError').textContent = xhr.responseJSON.errors.address[0];
-                        }
-                        if (xhr.responseJSON.errors.profile_picture) {
-                            document.getElementById('profilePictureError').textContent = xhr.responseJSON.errors.profile_picture[0];
-                        }
+                    });
+
+                    if (hadFieldError) {
+                        toastr.error('Please fix the highlighted fields.');
+                    } else if (xhr.status === 419) {
+                        toastr.error('Session expired. Refresh the page and try again.');
+                    } else if (xhr.status === 0) {
+                        toastr.error('Network error — server unreachable.');
+                    } else {
+                        toastr.error(data.message || ('Save failed (HTTP ' + xhr.status + ')'));
+                    }
+                    console.error('Profile save failed:', xhr.status, xhr.responseText);
+                },
+                complete() {
+                    if (saveBtn && saveBtn.disabled) {
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
                     }
                 }
             });
         }
 
-        // Preview image before upload
         document.getElementById('profile_picture').addEventListener('change', function() {
             const file = this.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = e => {
                     document.querySelector('.profile-picture-preview').src = e.target.result;
                 };
                 reader.readAsDataURL(file);

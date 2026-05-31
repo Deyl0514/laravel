@@ -5,53 +5,43 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Task extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'user_id',
+        'category_id',
         'title',
         'description',
         'priority',
         'status',
         'due_date',
+        'completed_at',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'due_date' => 'date',
+        'completed_at' => 'datetime',
     ];
 
-    /**
-     * Get the user that owns the task.
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Check if task is overdue.
-     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
     public function isOverdue(): bool
     {
         return $this->due_date && $this->due_date->isPast() && $this->status !== 'completed';
     }
 
-    /**
-     * Get priority badge color.
-     */
     public function getPriorityColor(): string
     {
         return match($this->priority) {
@@ -62,9 +52,6 @@ class Task extends Model
         };
     }
 
-    /**
-     * Get status badge color.
-     */
     public function getStatusColor(): string
     {
         return match($this->status) {

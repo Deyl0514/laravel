@@ -15,28 +15,36 @@ class DashboardController extends Controller
     public function index(): View
     {
         $user = auth()->user();
-        
+
         $totalUsers = User::count();
-        $totalTasks = Task::count();
-        $completedTasks = Task::where('status', 'completed')->count();
-        $pendingTasks = Task::where('status', 'pending')->count();
 
-        // Tasks per status for the logged-in user
+        $myTasksQuery = Task::where('user_id', $user->id);
+
+        $totalTasks = (clone $myTasksQuery)->count();
+        $completedTasks = (clone $myTasksQuery)->where('status', 'completed')->count();
+        $pendingTasks = (clone $myTasksQuery)->where('status', 'pending')->count();
+        $overdueTasks = (clone $myTasksQuery)
+            ->whereNotNull('due_date')
+            ->whereDate('due_date', '<', now())
+            ->where('status', '!=', 'completed')
+            ->count();
+
+        $completionRate = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100) : 0;
+
         $tasksByStatus = [
-            'pending' => Task::where('user_id', $user->id)->where('status', 'pending')->count(),
-            'in_progress' => Task::where('user_id', $user->id)->where('status', 'in_progress')->count(),
-            'completed' => Task::where('user_id', $user->id)->where('status', 'completed')->count(),
+            'pending' => (clone $myTasksQuery)->where('status', 'pending')->count(),
+            'in_progress' => (clone $myTasksQuery)->where('status', 'in_progress')->count(),
+            'completed' => $completedTasks,
         ];
 
-        // Tasks by priority for the logged-in user
         $tasksByPriority = [
-            'low' => Task::where('user_id', $user->id)->where('priority', 'low')->count(),
-            'medium' => Task::where('user_id', $user->id)->where('priority', 'medium')->count(),
-            'high' => Task::where('user_id', $user->id)->where('priority', 'high')->count(),
+            'low' => (clone $myTasksQuery)->where('priority', 'low')->count(),
+            'medium' => (clone $myTasksQuery)->where('priority', 'medium')->count(),
+            'high' => (clone $myTasksQuery)->where('priority', 'high')->count(),
         ];
 
-        // Recent tasks
         $recentTasks = Task::where('user_id', $user->id)
+            ->with('category')
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
@@ -46,6 +54,8 @@ class DashboardController extends Controller
             'totalTasks',
             'completedTasks',
             'pendingTasks',
+            'overdueTasks',
+            'completionRate',
             'tasksByStatus',
             'tasksByPriority',
             'recentTasks'

@@ -7,30 +7,16 @@
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-md-6 col-lg-3 mb-3">
-            <div class="stat-card users">
-                <div class="stat-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-number">{{ $totalUsers }}</div>
-                <div class="stat-label">Total Users</div>
-            </div>
-        </div>
-
-        <div class="col-md-6 col-lg-3 mb-3">
             <div class="stat-card tasks">
-                <div class="stat-icon">
-                    <i class="fas fa-list-check"></i>
-                </div>
+                <div class="stat-icon"><i class="fas fa-list-check"></i></div>
                 <div class="stat-number">{{ $totalTasks }}</div>
-                <div class="stat-label">Total Tasks</div>
+                <div class="stat-label">My Tasks</div>
             </div>
         </div>
 
         <div class="col-md-6 col-lg-3 mb-3">
             <div class="stat-card completed">
-                <div class="stat-icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
+                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
                 <div class="stat-number">{{ $completedTasks }}</div>
                 <div class="stat-label">Completed</div>
             </div>
@@ -38,12 +24,34 @@
 
         <div class="col-md-6 col-lg-3 mb-3">
             <div class="stat-card pending">
-                <div class="stat-icon">
-                    <i class="fas fa-hourglass-half"></i>
-                </div>
+                <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
                 <div class="stat-number">{{ $pendingTasks }}</div>
                 <div class="stat-label">Pending</div>
             </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="stat-card" style="border-left-color: var(--danger-accent);">
+                <div class="stat-icon" style="color: var(--danger-accent);"><i class="fas fa-triangle-exclamation"></i></div>
+                <div class="stat-number">{{ $overdueTasks }}</div>
+                <div class="stat-label">Overdue</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Completion Progress -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <strong><i class="fas fa-bullseye text-primary"></i> Completion Rate</strong>
+                <span class="text-muted">{{ $completedTasks }} / {{ $totalTasks }} ({{ $completionRate }}%)</span>
+            </div>
+            <div class="progress-thin">
+                <div class="bar" style="width: {{ $completionRate }}%;"></div>
+            </div>
+            <small class="text-muted d-block mt-2">
+                <i class="fas fa-users"></i> {{ $totalUsers }} registered user{{ $totalUsers === 1 ? '' : 's' }}
+            </small>
         </div>
     </div>
 
@@ -98,6 +106,7 @@
                                 <thead>
                                     <tr>
                                         <th>Title</th>
+                                        <th>Category</th>
                                         <th>Priority</th>
                                         <th>Status</th>
                                         <th>Due Date</th>
@@ -111,6 +120,15 @@
                                                 <strong>{{ $task->title }}</strong>
                                                 @if ($task->isOverdue())
                                                     <span class="badge badge-danger ms-2">Overdue</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if ($task->category)
+                                                    <span class="category-chip" style="background-color: {{ $task->category->color }}1a; color: {{ $task->category->color }};">
+                                                        <span class="dot"></span>{{ $task->category->name }}
+                                                    </span>
+                                                @else
+                                                    <span class="text-muted">—</span>
                                                 @endif
                                             </td>
                                             <td>
@@ -243,7 +261,7 @@
                             }
                         }
                     }
-                }
+                }   
             }
         });
     </script>

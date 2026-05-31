@@ -8,18 +8,12 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the profile page.
-     */
     public function index(): View
     {
-        $user = auth()->user();
+        $user = auth()->user()->fresh();
         return view('profile.index', compact('user'));
     }
 
-    /**
-     * Update the user profile.
-     */
     public function update(Request $request)
     {
         $user = auth()->user();
@@ -32,23 +26,29 @@ class ProfileController extends Controller
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Handle profile picture upload
         if ($request->hasFile('profile_picture')) {
-            // Delete old profile picture if exists
             if ($user->profile_picture && Storage::disk('public')->exists($user->profile_picture)) {
                 Storage::disk('public')->delete($user->profile_picture);
             }
-
-            $path = $request->file('profile_picture')->store('profile-pictures', 'public');
-            $validated['profile_picture'] = $path;
+            $validated['profile_picture'] = $request->file('profile_picture')
+                ->store('profile-pictures', 'public');
+        } else {
+            unset($validated['profile_picture']);
         }
 
-        $user->update($validated);
+        $user->forceFill([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'gender' => $validated['gender'] ?? null,
+            'address' => $validated['address'] ?? null,
+        ] + (isset($validated['profile_picture'])
+            ? ['profile_picture' => $validated['profile_picture']]
+            : []))->save();
 
         return response()->json([
             'success' => true,
             'message' => 'Profile updated successfully!',
-            'user' => $user,
+            'user' => $user->fresh(),
         ]);
     }
 }

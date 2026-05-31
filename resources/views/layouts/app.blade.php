@@ -16,6 +16,9 @@
     
     <!-- Toastr CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     
     <!-- Chart.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -498,6 +501,111 @@
             margin-right: 5px;
             margin-bottom: 10px;
         }
+
+        /* Category chip */
+        .category-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background-color: #eef2ff;
+            color: #3730a3;
+        }
+        .category-chip .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* Kanban */
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        @media (max-width: 992px) {
+            .kanban-board { grid-template-columns: 1fr; }
+        }
+        .kanban-column {
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 15px;
+            min-height: 400px;
+        }
+        .kanban-column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            font-weight: 700;
+            color: #334155;
+        }
+        .kanban-column .count {
+            background: white;
+            border-radius: 999px;
+            padding: 2px 10px;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+        .kanban-list {
+            min-height: 100px;
+        }
+        .kanban-card {
+            background: white;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            cursor: grab;
+            border-left: 4px solid #cbd5e1;
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
+        }
+        .kanban-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            transform: translateY(-1px);
+        }
+        .kanban-card.priority-high { border-left-color: var(--danger-accent); }
+        .kanban-card.priority-medium { border-left-color: var(--warning-accent); }
+        .kanban-card.priority-low { border-left-color: var(--secondary-accent); }
+        .kanban-card .title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 6px;
+        }
+        .kanban-card .meta {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            font-size: 0.75rem;
+            color: #64748b;
+            flex-wrap: wrap;
+        }
+        .sortable-ghost {
+            opacity: 0.4;
+            background: #e0e7ff !important;
+        }
+        .sortable-drag {
+            transform: rotate(2deg);
+        }
+
+        /* Progress bar */
+        .progress-thin {
+            height: 8px;
+            border-radius: 999px;
+            background-color: #e2e8f0;
+            overflow: hidden;
+        }
+        .progress-thin .bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-accent), var(--secondary-accent));
+            transition: width 0.4s ease;
+        }
     </style>
 
     @yield('extra-css')
@@ -516,9 +624,21 @@
                     <i class="fas fa-chart-line"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="{{ route('tasks.index') }}" class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}">
+                <a href="{{ route('tasks.index') }}" class="nav-link {{ request()->routeIs('tasks.index') ? 'active' : '' }}">
                     <i class="fas fa-list-check"></i>
                     <span>Tasks</span>
+                </a>
+                <a href="{{ route('tasks.board') }}" class="nav-link {{ request()->routeIs('tasks.board') ? 'active' : '' }}">
+                    <i class="fas fa-columns"></i>
+                    <span>Board</span>
+                </a>
+                <a href="{{ route('categories.index') }}" class="nav-link {{ request()->routeIs('categories.*') ? 'active' : '' }}">
+                    <i class="fas fa-tags"></i>
+                    <span>Categories</span>
+                </a>
+                <a href="{{ route('tasks.trashed') }}" class="nav-link {{ request()->routeIs('tasks.trashed') ? 'active' : '' }}">
+                    <i class="fas fa-trash-can"></i>
+                    <span>Trash</span>
                 </a>
                 <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
                     <i class="fas fa-users"></i>
@@ -576,6 +696,32 @@
 
     <!-- Toastr JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- SortableJS (drag-and-drop for Kanban) -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+
+    <!-- CSRF + global jQuery setup -->
+    <script>
+        $.ajaxSetup({
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        });
+
+        function confirmDelete(title, text = "This action can be undone from Trash.") {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Yes, delete',
+                cancelButtonText: 'Cancel'
+            });
+        }
+    </script>
 
     <!-- Toastr Configuration -->
     <script>

@@ -60,6 +60,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the categories for the user.
+     */
+    public function categories(): HasMany
+    {
+        return $this->hasMany(Category::class);
+    }
+
+    /**
      * Get the profile picture URL.
      */
     public function getProfilePictureUrl(): string
