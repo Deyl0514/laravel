@@ -65,11 +65,17 @@
             $.ajax({
                 url: `/tasks/${id}/restore`,
                 method: 'POST',
+                headers: { 'Accept': 'application/json' },
                 success(res) {
                     toastr.success(res.message);
                     setTimeout(() => location.reload(), 500);
                 },
-                error() { toastr.error('Restore failed'); }
+                error(xhr) {
+                    const data = xhr.responseJSON || {};
+                    if (xhr.status === 419) toastr.error('Session expired (419). Refresh the page.');
+                    else if (xhr.status === 0) toastr.error('Network error — server unreachable.');
+                    else toastr.error(data.message || ('Restore failed (HTTP ' + xhr.status + ')'));
+                }
             });
         }
 
@@ -85,12 +91,19 @@
                 if (!result.isConfirmed) return;
                 $.ajax({
                     url: `/tasks/${id}/force`,
-                    method: 'DELETE',
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json' },
+                    data: { _method: 'DELETE' },
                     success(res) {
                         toastr.success(res.message);
                         setTimeout(() => location.reload(), 500);
                     },
-                    error() { toastr.error('Delete failed'); }
+                    error(xhr) {
+                        const data = xhr.responseJSON || {};
+                        if (xhr.status === 419) toastr.error('Session expired (419). Refresh the page.');
+                        else if (xhr.status === 0) toastr.error('Network error — server unreachable.');
+                        else toastr.error(data.message || ('Delete failed (HTTP ' + xhr.status + ')'));
+                    }
                 });
             });
         }

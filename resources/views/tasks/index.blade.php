@@ -263,12 +263,19 @@
                 if (!result.isConfirmed) return;
                 $.ajax({
                     url: `/tasks/${id}`,
-                    method: 'DELETE',
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json' },
+                    data: { _method: 'DELETE' },
                     success(res) {
                         toastr.success(res.message);
                         setTimeout(() => location.reload(), 500);
                     },
-                    error() { toastr.error('Error deleting task'); }
+                    error(xhr) {
+                        const data = xhr.responseJSON || {};
+                        if (xhr.status === 419) toastr.error('Session expired (419). Refresh the page.');
+                        else if (xhr.status === 0) toastr.error('Network error — server unreachable.');
+                        else toastr.error(data.message || ('Error deleting task (HTTP ' + xhr.status + ')'));
+                    }
                 });
             });
         }
