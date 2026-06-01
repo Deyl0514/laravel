@@ -186,6 +186,7 @@
             $.ajax({
                 url: tasksStoreUrl,
                 method: 'POST',
+                headers: { 'Accept': 'application/json' },
                 data: {
                     title: $('#addTitle').val(),
                     description: $('#addDescription').val(),
@@ -200,8 +201,14 @@
                     setTimeout(() => location.reload(), 800);
                 },
                 error(xhr) {
-                    if (xhr.responseJSON && xhr.responseJSON.errors) applyErrors('add', xhr.responseJSON.errors);
-                    else toastr.error('Failed to create task');
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        applyErrors('add', xhr.responseJSON.errors);
+                        return;
+                    }
+                    const data = xhr.responseJSON || {};
+                    if (xhr.status === 419) toastr.error('Session expired (419). Refresh the page.');
+                    else if (xhr.status === 0) toastr.error('Network error — server unreachable.');
+                    else toastr.error(data.message || ('Failed to create task (HTTP ' + xhr.status + ')'));
                 }
             });
         }
@@ -212,6 +219,7 @@
             $.ajax({
                 url: `/tasks/${id}`,
                 method: 'PUT',
+                headers: { 'Accept': 'application/json' },
                 data: {
                     title: $('#editTitle').val(),
                     description: $('#editDescription').val(),
@@ -225,8 +233,14 @@
                     setTimeout(() => location.reload(), 800);
                 },
                 error(xhr) {
-                    if (xhr.responseJSON && xhr.responseJSON.errors) applyErrors('edit', xhr.responseJSON.errors);
-                    else toastr.error('Failed to update task');
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        applyErrors('edit', xhr.responseJSON.errors);
+                        return;
+                    }
+                    const data = xhr.responseJSON || {};
+                    if (xhr.status === 419) toastr.error('Session expired (419). Refresh the page.');
+                    else if (xhr.status === 0) toastr.error('Network error — server unreachable.');
+                    else toastr.error(data.message || ('Failed to update task (HTTP ' + xhr.status + ')'));
                 }
             });
         }
