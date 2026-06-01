@@ -1,3 +1,30 @@
+<div class="modal fade" id="deleteTaskModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">
+                    <i class="fas fa-triangle-exclamation"></i> Move task to Trash?
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">You are about to delete:</p>
+                <p class="fw-bold mb-3" id="deleteTaskTitle">—</p>
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle"></i>
+                    The task will be moved to <strong>Trash</strong>. You can restore it later or delete it permanently from there.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteTaskBtn">
+                    <i class="fas fa-trash"></i> Move to Trash
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="addTaskModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">

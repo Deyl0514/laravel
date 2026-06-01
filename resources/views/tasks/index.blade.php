@@ -112,8 +112,10 @@
                                             data-bs-toggle="modal" data-bs-target="#editTaskModal">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-danger"
-                                            onclick="deleteTask({{ $task->id }}, @json($task->title))">
+                                    <button type="button" class="btn btn-sm btn-danger delete-task-btn"
+                                            data-task-id="{{ $task->id }}"
+                                            data-task-title="{{ $task->title }}"
+                                            data-bs-toggle="modal" data-bs-target="#deleteTaskModal">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </td>
@@ -258,27 +260,41 @@
             });
         }
 
-        function deleteTask(id, title) {
-            confirmDelete(`Delete "${title}"?`).then(result => {
-                if (!result.isConfirmed) return;
-                $.ajax({
-                    url: `/tasks/${id}`,
-                    method: 'POST',
-                    headers: { 'Accept': 'application/json' },
-                    data: { _method: 'DELETE' },
-                    success(res) {
-                        toastr.success(res.message);
-                        setTimeout(() => location.reload(), 500);
-                    },
-                    error(xhr) {
-                        const data = xhr.responseJSON || {};
-                        if (xhr.status === 419) toastr.error('Session expired (419). Refresh the page.');
-                        else if (xhr.status === 0) toastr.error('Network error — server unreachable.');
-                        else toastr.error(data.message || ('Error deleting task (HTTP ' + xhr.status + ')'));
-                    }
-                });
+        let pendingDeleteTaskId = null;
+
+        document.querySelectorAll('.delete-task-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                pendingDeleteTaskId = this.dataset.taskId;
+                document.getElementById('deleteTaskTitle').textContent = this.dataset.taskTitle || '';
             });
-        }
+        });
+
+        document.getElementById('confirmDeleteTaskBtn').addEventListener('click', function () {
+            if (!pendingDeleteTaskId) return;
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+
+            $.ajax({
+                url: `/tasks/${pendingDeleteTaskId}`,
+                method: 'POST',
+                headers: { 'Accept': 'application/json' },
+                data: { _method: 'DELETE' },
+                success(res) {
+                    bootstrap.Modal.getInstance(document.getElementById('deleteTaskModal')).hide();
+                    toastr.success(res.message);
+                    setTimeout(() => location.reload(), 500);
+                },
+                error(xhr) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-trash"></i> Move to Trash';
+                    const data = xhr.responseJSON || {};
+                    if (xhr.status === 419) toastr.error('Session expired (419). Refresh the page.');
+                    else if (xhr.status === 0) toastr.error('Network error — server unreachable.');
+                    else toastr.error(data.message || ('Error deleting task (HTTP ' + xhr.status + ')'));
+                }
+            });
+        });
 
         function buildFilterUrl() {
             const params = new URLSearchParams();
