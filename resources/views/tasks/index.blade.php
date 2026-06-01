@@ -114,8 +114,7 @@
                                     </button>
                                     <button type="button" class="btn btn-sm btn-danger delete-task-btn"
                                             data-task-id="{{ $task->id }}"
-                                            data-task-title="{{ $task->title }}"
-                                            data-bs-toggle="modal" data-bs-target="#deleteTaskModal">
+                                            data-task-title="{{ $task->title }}">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </td>
@@ -260,41 +259,65 @@
             });
         }
 
-        let pendingDeleteTaskId = null;
+        window.__pendingDeleteTaskId = null;
 
-        document.querySelectorAll('.delete-task-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                pendingDeleteTaskId = this.dataset.taskId;
-                document.getElementById('deleteTaskTitle').textContent = this.dataset.taskTitle || '';
-            });
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('.delete-task-btn');
+            if (!btn) return;
+            e.preventDefault();
+
+            window.__pendingDeleteTaskId = btn.getAttribute('data-task-id');
+            const titleEl = document.getElementById('deleteTaskTitle');
+            if (titleEl) titleEl.textContent = btn.getAttribute('data-task-title') || '';
+
+            const modalEl = document.getElementById('deleteTaskModal');
+            if (modalEl && window.bootstrap && bootstrap.Modal) {
+                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+            } else if (confirm('Move this task to Trash?')) {
+                doDeleteTask();
+            }
         });
 
-        document.getElementById('confirmDeleteTaskBtn').addEventListener('click', function () {
-            if (!pendingDeleteTaskId) return;
-            const btn = this;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+        document.addEventListener('click', function (e) {
+            if (e.target.id !== 'confirmDeleteTaskBtn' && !e.target.closest('#confirmDeleteTaskBtn')) return;
+            doDeleteTask();
+        });
+
+        function doDeleteTask() {
+            const id = window.__pendingDeleteTaskId;
+            if (!id) return;
+            const confirmBtn = document.getElementById('confirmDeleteTaskBtn');
+            if (confirmBtn) {
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+            }
 
             $.ajax({
-                url: `/tasks/${pendingDeleteTaskId}`,
+                url: '/tasks/' + id,
                 method: 'POST',
                 headers: { 'Accept': 'application/json' },
-                data: { _method: 'DELETE' },
-                success(res) {
-                    bootstrap.Modal.getInstance(document.getElementById('deleteTaskModal')).hide();
-                    toastr.success(res.message);
-                    setTimeout(() => location.reload(), 500);
+                data: { _method: 'DELETE', _token: $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token() }}' },
+                success: function (res) {
+                    const modalEl = document.getElementById('deleteTaskModal');
+                    if (modalEl && window.bootstrap) {
+                        const inst = bootstrap.Modal.getOrCreateInstance(modalEl);
+                        inst.hide();
+                    }
+                    toastr.success(res.message || 'Task moved to Trash');
+                    setTimeout(function () { location.reload(); }, 500);
                 },
-                error(xhr) {
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-trash"></i> Move to Trash';
+                error: function (xhr) {
+                    if (confirmBtn) {
+                        confirmBtn.disabled = false;
+                        confirmBtn.innerHTML = '<i class="fas fa-trash"></i> Move to Trash';
+                    }
                     const data = xhr.responseJSON || {};
                     if (xhr.status === 419) toastr.error('Session expired (419). Refresh the page.');
                     else if (xhr.status === 0) toastr.error('Network error — server unreachable.');
                     else toastr.error(data.message || ('Error deleting task (HTTP ' + xhr.status + ')'));
                 }
             });
-        });
+        }
 
         function buildFilterUrl() {
             const params = new URLSearchParams();
